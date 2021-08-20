@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NextSeo } from 'next-seo';
+import { useRouter } from 'next/router';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
+import { localStorage } from 'src/utils/localStorage';
+import { AppState } from 'src/rdx/rootReducer';
 
 import { Content } from '../src/components/layout/Content';
 import { CoinsWeMineSection } from '../src/pages/Home/components/CoinsWeMine/CoinsWeMine.section';
@@ -12,11 +16,7 @@ import { SearchAddressBar } from '../src/components/SearchAddressBar/SearchAddre
 import { Spacer } from '../src/components/layout/Spacer';
 import { CoinEarnings } from '../src/pages/Home/components/CoinEarnings/CoinEarnings';
 import { WhyFlexpool } from '../src/pages/Home/components/WhyFlexpool/WhyFlexpool';
-import {
-  Hero,
-  SearchWrapper,
-  PageContainer,
-} from '../src/pages/Home/components';
+import { Hero, SearchWrapper, PageContainer } from '../src/pages/Home/components';
 
 import { poolCoinsFullGet } from '../src/rdx/poolCoinsFull/poolCoinsFull.actions';
 
@@ -24,11 +24,21 @@ export const HomePage = () => {
   const d = useDispatch();
   const { t, i18n } = useTranslation('home');
   const { t: seoT } = useTranslation('seo');
+  const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     d(poolCoinsFullGet());
     // useEffect only needs to fire on page load
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      let addr = localStorage('mineAddr').get();
+      let cachedState = localStorage<AppState>('app_state').get() || {};
+      if (!addr) return;
+      router.push(`/miner/${cachedState?.localSettings.coin}/${addr}`);
+    }
   }, []);
 
   return (

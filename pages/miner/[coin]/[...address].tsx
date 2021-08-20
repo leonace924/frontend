@@ -38,6 +38,7 @@ import { FaChartBar, FaCube, FaWallet } from 'react-icons/fa';
 import { useActiveSearchParamWorker } from 'src/hooks/useActiveQueryWorker';
 import { useAsyncState } from 'src/hooks/useAsyncState';
 import { fetchApi } from 'src/utils/fetchApi';
+import { localStorage } from 'src/utils/localStorage';
 
 const TabContent = styled.div`
   box-shadow: inset -1px 18px 19px -13px var(--bg-secondary);
@@ -318,6 +319,7 @@ export const MinerDashboardPage: React.FC<{
   const locateAddressState = useAsyncState<string | null>();
 
   useEffect(() => {
+    localStorage('mineAddr').set(address?.[0]);
     locateAddressState.start(
       fetchApi<string | null>('/miner/locateAddress', {
         query: { address },
