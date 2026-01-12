@@ -24,7 +24,11 @@ export class HaSelect extends SelectBase {
   protected override render() {
     return html`
       ${super.render()}
-      ${this.clearable && !this.required && !this.disabled && this.value
+      ${this.clearable &&
+      !this.required &&
+      !this.disabled &&
+      this.value != null &&
+      this.value !== ""
         ? html`<ha-icon-button
             label="clear"
             @click=${this._clearValue}
@@ -99,6 +103,20 @@ export class HaSelect extends SelectBase {
     }
   }
 
+  // Fix for numeric values like 0 being treated as falsy (#28784)
+  // The Material base class uses !!value which treats 0 as "no value"
+  protected override onBlur() {
+    super.onBlur();
+    if (this.value != null && this.value !== "") {
+      requestAnimationFrame(() => {
+        this.mdcFoundation?.notchOutline(true);
+        this.shadowRoot
+          ?.querySelector(".mdc-floating-label")
+          ?.classList.add("mdc-floating-label--float-above");
+      });
+    }
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener(
@@ -108,7 +126,7 @@ export class HaSelect extends SelectBase {
   }
 
   private _clearValue(): void {
-    if (this.disabled || !this.value) {
+    if (this.disabled || this.value == null || this.value === "") {
       return;
     }
     this.valueSetDirectly = true;
